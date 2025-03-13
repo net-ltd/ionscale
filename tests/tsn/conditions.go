@@ -1,6 +1,7 @@
 package tsn
 
 import (
+	"net/netip"
 	"slices"
 	"strings"
 	"tailscale.com/ipn/ipnstate"
@@ -25,6 +26,13 @@ func HasTailnet(tailnet string) Condition {
 func HasTag(tag string) Condition {
 	return func(status *ipnstate.Status) bool {
 		return status.Self != nil && status.Self.Tags != nil && views.SliceContains[string](*status.Self.Tags, tag)
+	}
+}
+
+func HasRoute(route netip.Prefix) Condition {
+	return func(status *ipnstate.Status) bool {
+		return 	status.Self != nil && 
+				status.Self.AllowedIPs.Len() > 1
 	}
 }
 

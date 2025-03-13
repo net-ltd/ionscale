@@ -38,8 +38,13 @@ func (t *TailscaleNode) Hostname() string {
 	return t.hostname
 }
 
-func (t *TailscaleNode) Up(authkey string) error {
-	t.mustExecTailscaleCmd("up", "--login-server", t.loginServer, "--authkey", authkey)
+func (t *TailscaleNode) Up(authkey string, flags ...UpFlag) error {
+	cmd := []string{"up", "--login-server", t.loginServer, "--authkey", authkey}
+	for _, f := range flags {
+		cmd = append(cmd, f...)
+	}
+	
+	t.mustExecTailscaleCmd(cmd...)
 	return t.WaitFor(Connected())
 }
 
@@ -195,6 +200,15 @@ func (t *TailscaleNode) mustExecTailscaleCmd(cmd ...string) string {
 	s, _, err := execCmd(t.resource, i...)
 	require.NoError(t.t, err)
 	return s
+}
+
+func (t *TailscaleNode) Set(flags ...UpFlag) string {
+	cmd := []string{"set"}
+	for _, f := range flags {
+		cmd = append(cmd, f...)
+	}
+
+	return t.mustExecTailscaleCmd(cmd...)
 }
 
 func execCmd(resource *dockertest.Resource, cmd ...string) (string, string, error) {
