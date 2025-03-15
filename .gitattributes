@@ -1,0 +1,2 @@
+.goreleaser.yaml merge=ours
+internal/templates/*.templ merge=ours

@@ -18,18 +18,18 @@ builds:
       - goos: windows
         goarch: arm64
     ldflags:
-      - -s -w -X github.com/jsiebens/ionscale/internal/version.Version={{.Version}} -X github.com/jsiebens/ionscale/internal/version.Revision={{.ShortCommit}}
+      - -s -w -X github.com/netltd/ionscale/internal/version.Version={{.Version}} -X github.com/netltd/ionscale/internal/version.Revision={{.ShortCommit}}
 
 checksum:
   name_template: "checksums.txt"
 
 dockers:
-  - image_templates: [ "ghcr.io/jsiebens/{{ .ProjectName }}:{{ .Version }}-amd64" ]
+  - image_templates: [ "ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-amd64" ]
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
       - --platform=linux/amd64
-  - image_templates: [ "ghcr.io/jsiebens/{{ .ProjectName }}:{{ .Version }}-arm64" ]
+  - image_templates: [ "ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-arm64" ]
     goarch: arm64
     dockerfile: Dockerfile
     use: buildx
@@ -37,14 +37,14 @@ dockers:
       - --platform=linux/arm64
 
 docker_manifests:
-  - name_template: ghcr.io/jsiebens/{{ .ProjectName }}:{{ .Version }}
+  - name_template: ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}
     image_templates:
-      - ghcr.io/jsiebens/{{ .ProjectName }}:{{ .Version }}-amd64
-      - ghcr.io/jsiebens/{{ .ProjectName }}:{{ .Version }}-arm64
-  - name_template: ghcr.io/jsiebens/{{ .ProjectName }}:latest
+      - ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-amd64
+      - ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-arm64
+  - name_template: ghcr.io/netltd/{{ .ProjectName }}:latest
     image_templates:
-      - ghcr.io/jsiebens/{{ .ProjectName }}:{{ .Version }}-amd64
-      - ghcr.io/jsiebens/{{ .ProjectName }}:{{ .Version }}-arm64
+      - ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-amd64
+      - ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-arm64
 
 signs:
   - cmd: cosign
