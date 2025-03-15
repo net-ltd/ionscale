@@ -8,8 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"net/netip"
 	"testing"
+	"time"
 )
 
+// This will test that the coordinator will automatically approve
+// the routes that we have ACL's for and ignore routes that we don't during
+// node registration
 func TestAdvertiseRoutesAutoApproverOnNewNode(t *testing.T) {
 	route1 := netip.MustParsePrefix("10.1.0.0/24")
 	route2 := netip.MustParsePrefix("10.2.0.0/24")
@@ -54,15 +58,20 @@ func TestAdvertiseRoutesAutoApproverOnNewNode(t *testing.T) {
 	})
 }
 
+// This will test that the coordinator will automatically approve
+// the routes that we have ACL's for and ignore routes that we don't
+// after the node is already registered
 func TestAdvertiseRoutesAutoApproverOnExistingNode(t *testing.T) {
 	route1 := netip.MustParsePrefix("10.1.0.0/24")
 	route2 := netip.MustParsePrefix("10.2.0.0/24")
+	route3 := netip.MustParsePrefix("10.3.0.0/24")
 
 	sc.Run(t, func(s *sc.Scenario) {
 		aclPolicy := defaults.DefaultACLPolicy()
 		aclPolicy.AutoApprovers = &ionscale.ACLAutoApprovers{
 			Routes: map[string][]string{
 				route1.String(): {"tag:test-route"},
+				route3.String(): {"tag:test-route"},
 			},
 		}
 
@@ -79,9 +88,12 @@ func TestAdvertiseRoutesAutoApproverOnExistingNode(t *testing.T) {
 		require.NoError(t, testNode.Check(tsn.HasTailnet(tailnet.Name)))
 
 		testNode.Set(tsn.WithAdvertiseRoutes([]string{
+			route3.String(),
 			route1.String(),
 			route2.String()},
 		))
+
+		time.Sleep(3 * time.Second)
 
 		mid, err := s.FindMachine(tailnet.Id, testNode.Hostname())
 		require.NoError(t, err)
@@ -90,10 +102,10 @@ func TestAdvertiseRoutesAutoApproverOnExistingNode(t *testing.T) {
 		require.NoError(t, err)
 
 		// Check that the coordinator server has record of the routes we requested to advertise
-		require.Equal(t, []string{route1.String(), route2.String()}, machineRoutes.AdvertisedRoutes)
+		require.Equal(t, []string{route1.String(), route2.String(), route3.String()}, machineRoutes.AdvertisedRoutes)
 
-		// Check that the coordinator server has 'AutoApproved' the one route which the ACL allows
-		require.Equal(t, []string{route1.String()}, machineRoutes.EnabledRoutes)
+		// Check that the coordinator server has 'AutoApproved' the routes which the ACL allows
+		require.Equal(t, []string{route1.String(), route3.String()}, machineRoutes.EnabledRoutes)
 
 		require.NoError(t, testNode.Check(tsn.HasRoute(route1)))
 	})

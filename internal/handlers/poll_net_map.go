@@ -11,12 +11,15 @@ import (
 	"github.com/klauspost/compress/zstd"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"net/netip"
 	"sync"
 	"tailscale.com/smallzstd"
 	"tailscale.com/tailcfg"
 	"tailscale.com/types/key"
 	"tailscale.com/util/dnsname"
 	"time"
+	xslices "golang.org/x/exp/slices"
+	"tailscale.com/net/tsaddr"
 )
 
 func NewPollNetMapHandler(
@@ -82,6 +85,29 @@ func (h *PollNetMapHandler) handlePollNetMap(c echo.Context, m *domain.Machine, 
 	}
 
 	if !mapRequest.Stream {
+		if !mapRequest.ReadOnly && mapRequest.OmitPeers {
+			// This is an endpoint update
+
+			approvedRoutes := m.Tailnet.ACLPolicy.Get().FindAutoApprovedIPs(mapRequest.Hostinfo.RoutableIPs, m.Tags, &m.User)
+			// Routes
+			oldRoutes := make([]netip.Prefix, 0)
+			if m.AllowIPs != nil {
+				oldRoutes = m.AllowIPs
+			}
+			newRoutes := approvedRoutes
+
+			tsaddr.SortPrefixes(oldRoutes)
+			tsaddr.SortPrefixes(newRoutes)
+
+			if !xslices.Equal(oldRoutes, newRoutes) {
+				strs := make([]string, len(approvedRoutes))
+				for i, p := range approvedRoutes {
+					strs[i] = p.String()
+				}
+				m.AutoAllowIPs = approvedRoutes
+			}
+		}
+
 		m.HostInfo = domain.HostInfo(*mapRequest.Hostinfo)
 		m.DiscoKey = mapRequest.DiscoKey.String()
 		m.Endpoints = mapRequest.Endpoints
