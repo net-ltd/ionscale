@@ -18,18 +18,18 @@ builds:
       - goos: windows
         goarch: arm64
     ldflags:
-      - -s -w -X github.com/netltd/ionscale/internal/version.Version={{.Version}} -X github.com/netltd/ionscale/internal/version.Revision={{.ShortCommit}}
+      - -s -w -X github.com/net-ltd/ionscale/internal/version.Version={{.Version}} -X github.com/net-ltd/ionscale/internal/version.Revision={{.ShortCommit}}
 
 checksum:
   name_template: "checksums.txt"
 
 dockers:
-  - image_templates: [ "ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-amd64" ]
+  - image_templates: [ "ghcr.io/net-ltd/{{ .ProjectName }}:{{ .Version }}-amd64" ]
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
       - --platform=linux/amd64
-  - image_templates: [ "ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-arm64" ]
+  - image_templates: [ "ghcr.io/net-ltd/{{ .ProjectName }}:{{ .Version }}-arm64" ]
     goarch: arm64
     dockerfile: Dockerfile
     use: buildx
@@ -37,14 +37,14 @@ dockers:
       - --platform=linux/arm64
 
 docker_manifests:
-  - name_template: ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}
+  - name_template: ghcr.io/net-ltd/{{ .ProjectName }}:{{ .Version }}
     image_templates:
-      - ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-amd64
-      - ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-arm64
-  - name_template: ghcr.io/netltd/{{ .ProjectName }}:latest
+      - ghcr.io/net-ltd/{{ .ProjectName }}:{{ .Version }}-amd64
+      - ghcr.io/net-ltd/{{ .ProjectName }}:{{ .Version }}-arm64
+  - name_template: ghcr.io/net-ltd/{{ .ProjectName }}:latest
     image_templates:
-      - ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-amd64
-      - ghcr.io/netltd/{{ .ProjectName }}:{{ .Version }}-arm64
+      - ghcr.io/net-ltd/{{ .ProjectName }}:{{ .Version }}-amd64
+      - ghcr.io/net-ltd/{{ .ProjectName }}:{{ .Version }}-arm64
 
 signs:
   - cmd: cosign
