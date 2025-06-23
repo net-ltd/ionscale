@@ -1,9 +1,10 @@
 package domain
 
 import (
-	"github.com/jsiebens/ionscale/pkg/client/ionscale"
 	"net/netip"
 	"strings"
+
+	"github.com/jsiebens/ionscale/pkg/client/ionscale"
 	"tailscale.com/tailcfg"
 )
 
@@ -122,6 +123,10 @@ func (a ACLPolicy) expandSSHSrcAlias(m *Machine, alias string, dstUser *User) []
 	}
 
 	if (alias == AutoGroupMember || alias == AutoGroupMembers) && !m.HasTags() {
+		return m.IPs()
+	}
+
+	if (alias == "autogroup:admin" || alias == "autogroup:admins") && !m.HasTags() {
 		return m.IPs()
 	}
 
