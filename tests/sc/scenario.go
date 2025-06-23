@@ -96,15 +96,6 @@ func (s *Scenario) FindMachine(tailnetID uint64, name string) (uint64, error) {
 	return 0, fmt.Errorf("machine %s not found", name)
 }
 
-func (s *Scenario) GetMachineRoutes(tailnetID uint64, machineID uint64) *api.MachineRoutes {
-	routes, err := s.ionscaleClient.GetMachineRoutes(
-					context.Background(), 
-					connect.NewRequest(&api.GetMachineRoutesRequest{MachineId: machineID}))
-	require.NoError(s.t, err)
-
-	return routes.Msg.Routes
-}
-
 func (s *Scenario) SetMachineName(machineID uint64, useOSHostname bool, name string) error {
 	req := &api.SetMachineNameRequest{MachineId: machineID, UseOsHostname: useOSHostname, Name: name}
 	_, err := s.ionscaleClient.SetMachineName(context.Background(), connect.NewRequest(req))
@@ -124,6 +115,12 @@ func (s *Scenario) SetIAMPolicy(tailnetID uint64, policy *ionscaleclt.IAMPolicy)
 func (s *Scenario) EnableMachineAutorization(tailnetID uint64) {
 	_, err := s.ionscaleClient.EnableMachineAuthorization(context.Background(), connect.NewRequest(&api.EnableMachineAuthorizationRequest{TailnetId: tailnetID}))
 	require.NoError(s.t, err)
+}
+
+func (s *Scenario) GetMachineRoutes(machineID uint64) *api.MachineRoutes {
+	routes, err := s.ionscaleClient.GetMachineRoutes(context.Background(), connect.NewRequest(&api.GetMachineRoutesRequest{MachineId: machineID}))
+	require.NoError(s.t, err)
+	return routes.Msg.Routes
 }
 
 func (s *Scenario) PushOIDCUser(sub, email, preferredUsername string) {

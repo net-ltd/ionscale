@@ -1,8 +1,6 @@
 package tsn
 
-import (
-	"strings"
-)
+import "strings"
 
 type UpFlag = []string
 
@@ -11,5 +9,5 @@ func WithAdvertiseTags(tags string) UpFlag {
 }
 
 func WithAdvertiseRoutes(routes []string) UpFlag {
-	return []string{"--advertise-routes", strings.Join(routes,",")}
+	return []string{"--advertise-routes", strings.Join(routes, ",")}
 }

@@ -8,13 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"net/netip"
 	"testing"
-	"time"
 )
 
-// This will test that the coordinator will automatically approve
-// the routes that we have ACL's for and ignore routes that we don't during
-// node registration
-func TestAdvertiseRoutesAutoApproverOnNewNode(t *testing.T) {
+func TestAdvertiseRoutesAutoApprovedOnNewNode(t *testing.T) {
+
 	route1 := netip.MustParsePrefix("10.1.0.0/24")
 	route2 := netip.MustParsePrefix("10.2.0.0/24")
 
@@ -30,7 +27,7 @@ func TestAdvertiseRoutesAutoApproverOnNewNode(t *testing.T) {
 		s.SetACLPolicy(tailnet.Id, aclPolicy)
 
 		testNode := s.NewTailscaleNode()
-		// Register the node and advertise routes
+
 		require.NoError(t, testNode.Up(
 			s.CreateAuthKey(tailnet.Id, true, "tag:test-route"),
 			tsn.WithAdvertiseTags("tag:test-route"),
@@ -40,28 +37,24 @@ func TestAdvertiseRoutesAutoApproverOnNewNode(t *testing.T) {
 			),
 		))
 
-		require.NoError(t, testNode.Check(tsn.HasTailnet(tailnet.Name)))
+		require.NoError(t, testNode.WaitFor(tsn.HasTailnet(tailnet.Name)))
 
 		mid, err := s.FindMachine(tailnet.Id, testNode.Hostname())
 		require.NoError(t, err)
 
-		machineRoutes := s.GetMachineRoutes(tailnet.Id, mid)
+
+		machineRoutes := s.GetMachineRoutes(mid)
 		require.NoError(t, err)
 
-		// Check that the coordinator server has record of the routes we requested to advertise
 		require.Equal(t, []string{route1.String(), route2.String()}, machineRoutes.AdvertisedRoutes)
-
-		// Check that the coordinator server has 'AutoApproved' the one route which the ACL allows
 		require.Equal(t, []string{route1.String()}, machineRoutes.EnabledRoutes)
 
-		require.NoError(t, testNode.Check(tsn.HasRoute(route1)))
+		require.NoError(t, testNode.Check(tsn.HasAllowedIP(route1)))
+		require.NoError(t, testNode.Check(tsn.IsMissingAllowedIP(route2)))
 	})
 }
 
-// This will test that the coordinator will automatically approve
-// the routes that we have ACL's for and ignore routes that we don't
-// after the node is already registered
-func TestAdvertiseRoutesAutoApproverOnExistingNode(t *testing.T) {
+func TestAdvertiseRoutesAutoApprovedOnExistingNode(t *testing.T) {
 	route1 := netip.MustParsePrefix("10.1.0.0/24")
 	route2 := netip.MustParsePrefix("10.2.0.0/24")
 	route3 := netip.MustParsePrefix("10.3.0.0/24")
@@ -79,7 +72,7 @@ func TestAdvertiseRoutesAutoApproverOnExistingNode(t *testing.T) {
 		s.SetACLPolicy(tailnet.Id, aclPolicy)
 
 		testNode := s.NewTailscaleNode()
-		// Register the node, but don't advertise any routes just yet!
+
 		require.NoError(t, testNode.Up(
 			s.CreateAuthKey(tailnet.Id, true, "tag:test-route"),
 			tsn.WithAdvertiseTags("tag:test-route"),
@@ -93,20 +86,56 @@ func TestAdvertiseRoutesAutoApproverOnExistingNode(t *testing.T) {
 			route2.String()},
 		))
 
-		time.Sleep(3 * time.Second)
+
+		require.NoError(t, testNode.WaitFor(tsn.HasAllowedIP(route1)))
+		require.NoError(t, testNode.WaitFor(tsn.HasAllowedIP(route3)))
+		require.NoError(t, testNode.WaitFor(tsn.IsMissingAllowedIP(route2)))
 
 		mid, err := s.FindMachine(tailnet.Id, testNode.Hostname())
 		require.NoError(t, err)
 
-		machineRoutes := s.GetMachineRoutes(tailnet.Id, mid)
+		machineRoutes := s.GetMachineRoutes(mid)
 		require.NoError(t, err)
 
-		// Check that the coordinator server has record of the routes we requested to advertise
 		require.Equal(t, []string{route1.String(), route2.String(), route3.String()}, machineRoutes.AdvertisedRoutes)
-
-		// Check that the coordinator server has 'AutoApproved' the routes which the ACL allows
 		require.Equal(t, []string{route1.String(), route3.String()}, machineRoutes.EnabledRoutes)
+	})
+}
 
-		require.NoError(t, testNode.Check(tsn.HasRoute(route1)))
+func TestAdvertiseRemoveRoutesAutoApprovedOnExistingNode(t *testing.T) {
+	route1 := netip.MustParsePrefix("10.1.0.0/24")
+	route2 := netip.MustParsePrefix("10.2.0.0/24")
+
+	sc.Run(t, func(s *sc.Scenario) {
+		aclPolicy := defaults.DefaultACLPolicy()
+		aclPolicy.AutoApprovers = &ionscale.ACLAutoApprovers{
+			Routes: map[string][]string{
+				route1.String(): {"tag:test-route"},
+				route2.String(): {"tag:test-route"},
+			},
+		}
+
+		tailnet := s.CreateTailnet()
+		s.SetACLPolicy(tailnet.Id, aclPolicy)
+
+		testNode := s.NewTailscaleNode()
+		require.NoError(t, testNode.Up(
+			s.CreateAuthKey(tailnet.Id, true, "tag:test-route"),
+			tsn.WithAdvertiseTags("tag:test-route"),
+			tsn.WithAdvertiseRoutes([]string{
+				route1.String(),
+				route2.String()},
+			),
+		))
+
+		require.NoError(t, testNode.WaitFor(tsn.HasTailnet(tailnet.Name)))
+		require.NoError(t, testNode.Check(tsn.HasAllowedIP(route1)))
+		require.NoError(t, testNode.Check(tsn.HasAllowedIP(route2)))
+
+		testNode.Set(tsn.WithAdvertiseRoutes([]string{
+			route1.String(),
+		}))
+
+		require.NoError(t, testNode.WaitFor(tsn.IsMissingAllowedIP(route2)))
 	})
 }

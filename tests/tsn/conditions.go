@@ -68,6 +68,24 @@ func HasUser(email string) Condition {
 	}
 }
 
+func HasAllowedIP(route netip.Prefix) Condition {
+	return func(status *ipnstate.Status) bool {
+		if status.Self == nil || status.Self.AllowedIPs.Len() == 0 {
+			return false
+		}
+		return slices.Contains(status.Self.AllowedIPs.AsSlice(), route)
+	}
+}
+
+func IsMissingAllowedIP(route netip.Prefix) Condition {
+	return func(status *ipnstate.Status) bool {
+		if status.Self == nil || status.Self.AllowedIPs.Len() == 0 {
+			return true
+		}
+		return !slices.Contains(status.Self.AllowedIPs.AsSlice(), route)
+	}
+}
+
 func PeerCount(expected int) Condition {
 	return func(status *ipnstate.Status) bool {
 		return len(status.Peers()) == expected

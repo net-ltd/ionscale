@@ -43,9 +43,18 @@ func (t *TailscaleNode) Up(authkey string, flags ...UpFlag) error {
 	for _, f := range flags {
 		cmd = append(cmd, f...)
 	}
-	
+
 	t.mustExecTailscaleCmd(cmd...)
 	return t.WaitFor(Connected())
+}
+
+func (t *TailscaleNode) Set(flags ...UpFlag) string {
+	cmd := []string{"set"}
+	for _, f := range flags {
+		cmd = append(cmd, f...)
+	}
+
+	return t.mustExecTailscaleCmd(cmd...)
 }
 
 func (t *TailscaleNode) LoginWithOidc(flags ...UpFlag) (int, error) {
@@ -200,15 +209,6 @@ func (t *TailscaleNode) mustExecTailscaleCmd(cmd ...string) string {
 	s, _, err := execCmd(t.resource, i...)
 	require.NoError(t.t, err)
 	return s
-}
-
-func (t *TailscaleNode) Set(flags ...UpFlag) string {
-	cmd := []string{"set"}
-	for _, f := range flags {
-		cmd = append(cmd, f...)
-	}
-
-	return t.mustExecTailscaleCmd(cmd...)
 }
 
 func execCmd(resource *dockertest.Resource, cmd ...string) (string, string, error) {
