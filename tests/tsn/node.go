@@ -211,6 +211,15 @@ func (t *TailscaleNode) mustExecTailscaleCmd(cmd ...string) string {
 	return s
 }
 
+func (t *TailscaleNode) Set(flags ...UpFlag) string {
+	cmd := []string{"set"}
+	for _, f := range flags {
+		cmd = append(cmd, f...)
+	}
+
+	return t.mustExecTailscaleCmd(cmd...)
+}
+
 func execCmd(resource *dockertest.Resource, cmd ...string) (string, string, error) {
 	return execCmdWithCheck(resource, nil, cmd...)
 }

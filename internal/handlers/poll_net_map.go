@@ -18,6 +18,8 @@ import (
 	"tailscale.com/types/key"
 	"tailscale.com/util/dnsname"
 	"time"
+	xslices "golang.org/x/exp/slices"
+	"tailscale.com/net/tsaddr"
 )
 
 func NewPollNetMapHandler(

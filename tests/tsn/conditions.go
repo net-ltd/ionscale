@@ -29,6 +29,13 @@ func HasTag(tag string) Condition {
 	}
 }
 
+func HasRoute(route netip.Prefix) Condition {
+	return func(status *ipnstate.Status) bool {
+		return 	status.Self != nil && 
+				status.Self.AllowedIPs.Len() > 1
+	}
+}
+
 func HasName(name string) Condition {
 	return func(status *ipnstate.Status) bool {
 		return status.Self != nil && strings.HasPrefix(status.Self.DNSName, name)

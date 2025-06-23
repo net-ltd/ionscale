@@ -11,6 +11,7 @@ import (
 )
 
 func TestAdvertiseRoutesAutoApprovedOnNewNode(t *testing.T) {
+
 	route1 := netip.MustParsePrefix("10.1.0.0/24")
 	route2 := netip.MustParsePrefix("10.2.0.0/24")
 
@@ -26,6 +27,7 @@ func TestAdvertiseRoutesAutoApprovedOnNewNode(t *testing.T) {
 		s.SetACLPolicy(tailnet.Id, aclPolicy)
 
 		testNode := s.NewTailscaleNode()
+
 		require.NoError(t, testNode.Up(
 			s.CreateAuthKey(tailnet.Id, true, "tag:test-route"),
 			tsn.WithAdvertiseTags("tag:test-route"),
@@ -39,6 +41,7 @@ func TestAdvertiseRoutesAutoApprovedOnNewNode(t *testing.T) {
 
 		mid, err := s.FindMachine(tailnet.Id, testNode.Hostname())
 		require.NoError(t, err)
+
 
 		machineRoutes := s.GetMachineRoutes(mid)
 		require.NoError(t, err)
@@ -69,6 +72,7 @@ func TestAdvertiseRoutesAutoApprovedOnExistingNode(t *testing.T) {
 		s.SetACLPolicy(tailnet.Id, aclPolicy)
 
 		testNode := s.NewTailscaleNode()
+
 		require.NoError(t, testNode.Up(
 			s.CreateAuthKey(tailnet.Id, true, "tag:test-route"),
 			tsn.WithAdvertiseTags("tag:test-route"),
@@ -81,6 +85,7 @@ func TestAdvertiseRoutesAutoApprovedOnExistingNode(t *testing.T) {
 			route1.String(),
 			route2.String()},
 		))
+
 
 		require.NoError(t, testNode.WaitFor(tsn.HasAllowedIP(route1)))
 		require.NoError(t, testNode.WaitFor(tsn.HasAllowedIP(route3)))

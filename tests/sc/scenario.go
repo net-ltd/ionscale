@@ -96,6 +96,15 @@ func (s *Scenario) FindMachine(tailnetID uint64, name string) (uint64, error) {
 	return 0, fmt.Errorf("machine %s not found", name)
 }
 
+func (s *Scenario) GetMachineRoutes(tailnetID uint64, machineID uint64) *api.MachineRoutes {
+	routes, err := s.ionscaleClient.GetMachineRoutes(
+					context.Background(), 
+					connect.NewRequest(&api.GetMachineRoutesRequest{MachineId: machineID}))
+	require.NoError(s.t, err)
+
+	return routes.Msg.Routes
+}
+
 func (s *Scenario) SetMachineName(machineID uint64, useOSHostname bool, name string) error {
 	req := &api.SetMachineNameRequest{MachineId: machineID, UseOsHostname: useOSHostname, Name: name}
 	_, err := s.ionscaleClient.SetMachineName(context.Background(), connect.NewRequest(req))
@@ -168,6 +177,7 @@ func WithName(name string) TailscaleNodeOpt {
 		config.Hostname = name
 	}
 }
+
 
 func (s *Scenario) NewTailscaleNode(opts ...TailscaleNodeOpt) *tsn.TailscaleNode {
 	config := &TailscaleNodeConfig{Hostname: petname.Generate(3, "-")}
