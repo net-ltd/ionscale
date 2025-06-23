@@ -1,35 +1,33 @@
-# ionscale
+# Welcome to ionscale
 
-> **Note**:
-> ionscale is currently beta quality, actively being developed and so subject to changes
+ionscale is an open-source alternative to Tailscale's control server, designed to provide a self-hosted coordination service for your Tailscale networks.
 
-**What is Tailscale?**
+!!! info "Beta status"
+    ionscale is currently in beta. While it's stable for production use for small tailnets, we're actively developing new features and improvements.
 
-[Tailscale](https://tailscale.com) is a VPN service that makes the devices and applications you own accessible anywhere in the world, securely and effortlessly.
-It enables encrypted point-to-point connections using the open source [WireGuard](https://www.wireguard.com/) protocol, which means only devices on your private network can communicate with each other.
+!!! warning "Documentation status"
+    This documentation is a work in progress. Some sections may be incomplete or missing. We're continuously improving the documentation to provide comprehensive coverage of all features.
 
-**What is ionscale?**
+## What is ionscale?
 
-While the Tailscale software running on each node is open source, their centralized "coordination server" which act as a shared drop box for public keys is not.
+Tailscale allows your devices to communicate securely across networks using WireGuard®. While Tailscale's client software is open source, their centralized coordination server (which manages public keys and network configurations) is proprietary.
 
-_ionscale_ aims to implement such lightweight, open source alternative Tailscale control server.
+**ionscale aims to implement a lightweight, open-source control server that:**
 
-## Features
+- Acts as a drop-in replacement for Tailscale's coordination server
+- Can be self-hosted on your infrastructure
+- Gives you full control over your network configuration
+- Works with the standard Tailscale clients
+- Supports a [wide range of Tailscale features](./overview/features.md)
 
-- multi [tailnet](https://tailscale.com/kb/1136/tailnet/) support
-- multi user support
-- OIDC integration (not required, although recommended)
-- [Auth keys](https://tailscale.com/kb/1085/auth-keys/)
-- [Access control list](https://tailscale.com/kb/1018/acls/)
-- [DNS](https://tailscale.com/kb/1054/dns/)
-    - nameservers
-    - Split DNS
-    - MagicDNS
-- [HTTPS Certs](https://tailscale.com/kb/1153/enabling-https/)
-- [Tailscale SSH](https://tailscale.com/kb/1193/tailscale-ssh/)
-- [Service collection](https://tailscale.com/kb/1100/services/)
-- [Taildrop](https://tailscale.com/kb/1106/taildrop/)
+## Getting started
 
-## Disclaimer
+- [**Installation guide**](./installation/index.md) - Install ionscale using Docker or directly on Linux
+- [**CLI configuration**](./getting-started/index.md) - Set up the ionscale CLI and authenticate
+- [**Creating a tailnet**](./getting-started/tailnet.md) - Create and manage your first tailnet
+- [**OIDC authentication**](./configuration/auth-oidc.md) - Configure user authentication via OIDC
+- [**DNS providers**](./configuration/dns-providers.md) - Set up DNS integration for HTTPS certificates
 
-This is not an official Tailscale or Tailscale Inc. project.
+<small>
+Disclaimer: This is not an official Tailscale or Tailscale Inc. project. Tailscale and WireGuard are trademarks of their respective owners.
+</small>
