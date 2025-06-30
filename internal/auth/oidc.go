@@ -3,19 +3,21 @@ package auth
 import (
 	"context"
 	"fmt"
-	"github.com/jsiebens/ionscale/internal/config"
 	"strings"
+
+	"github.com/jsiebens/ionscale/internal/config"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )
 
 type OIDCProvider struct {
-	clientID     string
-	clientSecret string
-	scopes       []string
-	provider     *oidc.Provider
-	verifier     *oidc.IDTokenVerifier
+	clientID      string
+	clientSecret  string
+	scopes        []string
+	provider      *oidc.Provider
+	verifier      *oidc.IDTokenVerifier
+	ApprovalForce bool
 }
 
 func NewOIDCProvider(c *config.AuthProvider) (*OIDCProvider, error) {
@@ -28,11 +30,12 @@ func NewOIDCProvider(c *config.AuthProvider) (*OIDCProvider, error) {
 	verifier := provider.Verifier(&oidc.Config{ClientID: c.ClientID, SkipClientIDCheck: c.ClientID == ""})
 
 	return &OIDCProvider{
-		clientID:     c.ClientID,
-		clientSecret: c.ClientSecret,
-		scopes:       append(defaultScopes, c.Scopes...),
-		provider:     provider,
-		verifier:     verifier,
+		clientID:      c.ClientID,
+		clientSecret:  c.ClientSecret,
+		scopes:        append(defaultScopes, c.Scopes...),
+		provider:      provider,
+		verifier:      verifier,
+		ApprovalForce: c.ForceApproval,
 	}, nil
 }
 
@@ -45,7 +48,11 @@ func (p *OIDCProvider) GetLoginURL(redirectURI, state string) string {
 		Scopes:       p.scopes,
 	}
 
-	return oauth2Config.AuthCodeURL(state, oauth2.ApprovalForce)
+	if p.ApprovalForce {
+		return oauth2Config.AuthCodeURL(state, oauth2.ApprovalForce)
+	} else {
+		return oauth2Config.AuthCodeURL(state)
+	}
 }
 
 func (p *OIDCProvider) Exchange(redirectURI, code string) (*User, error) {

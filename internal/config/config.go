@@ -4,20 +4,21 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/caddyserver/certmagic"
 	"github.com/jsiebens/ionscale/internal/domain"
 	"github.com/jsiebens/ionscale/internal/key"
 	"github.com/jsiebens/ionscale/internal/util"
 	"github.com/mitchellh/go-homedir"
-	"net/url"
-	"os"
-	"path/filepath"
-	"regexp"
 	"sigs.k8s.io/yaml"
-	"strings"
 	"tailscale.com/tailcfg"
 	tkey "tailscale.com/types/key"
-	"time"
 )
 
 const (
@@ -206,10 +207,11 @@ type Auth struct {
 }
 
 type AuthProvider struct {
-	Issuer       string   `json:"issuer"`
-	ClientID     string   `json:"client_id"`
-	ClientSecret string   `json:"client_secret"`
-	Scopes       []string `json:"additional_scopes" `
+	Issuer        string   `json:"issuer"`
+	ClientID      string   `json:"client_id"`
+	ClientSecret  string   `json:"client_secret"`
+	Scopes        []string `json:"additional_scopes"`
+	ForceApproval bool     `json:"force_approval"`
 }
 
 type DNS struct {
