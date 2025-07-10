@@ -3,7 +3,7 @@ package version
 var (
 	Version    string
 	Revision   string
-	DevVersion = "dev"
+	DevVersion = "Pre-release"
 )
 
 func BuildVersion() string {

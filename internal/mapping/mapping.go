@@ -2,16 +2,16 @@ package mapping
 
 import (
 	"fmt"
+	"net/netip"
+	"strconv"
+	"time"
+
 	"github.com/jsiebens/ionscale/internal/config"
 	"github.com/jsiebens/ionscale/internal/domain"
 	"github.com/jsiebens/ionscale/internal/util"
-	"net/netip"
-	"slices"
-	"strconv"
 	"tailscale.com/tailcfg"
 	"tailscale.com/types/dnstype"
 	"tailscale.com/types/key"
-	"time"
 )
 
 func ToDNSConfig(m *domain.Machine, tailnet *domain.Tailnet, c *domain.DNSConfig) *tailcfg.DNSConfig {
@@ -166,45 +166,30 @@ func ToNode(capVer tailcfg.CapabilityVersion, m *domain.Machine, tailnet *domain
 	}
 
 	if !peer {
-		var capabilities []tailcfg.NodeCapability
-		capMap := make(tailcfg.NodeCapMap)
-
-		for _, c := range tailnet.ACLPolicy.Get().NodeCapabilities(m) {
-			capabilities = append(capabilities, c)
-			capMap[c] = []tailcfg.RawMessage{}
-		}
+		capMap := tailnet.ACLPolicy.Get().NodeCapabilities(m)
 
 		if !m.HasTags() && role == domain.UserRoleAdmin {
-			capabilities = append(capabilities, tailcfg.CapabilityAdmin)
 			capMap[tailcfg.CapabilityAdmin] = []tailcfg.RawMessage{}
 		}
 
 		if tailnet.FileSharingEnabled {
-			capabilities = append(capabilities, tailcfg.CapabilityFileSharing)
 			capMap[tailcfg.CapabilityFileSharing] = []tailcfg.RawMessage{}
 		}
 
 		if tailnet.SSHEnabled {
-			capabilities = append(capabilities, tailcfg.CapabilitySSH)
 			capMap[tailcfg.CapabilitySSH] = []tailcfg.RawMessage{}
 		}
 
 		if tailnet.DNSConfig.HttpsCertsEnabled {
-			capabilities = append(capabilities, tailcfg.CapabilityHTTPS)
 			capMap[tailcfg.CapabilityHTTPS] = []tailcfg.RawMessage{}
 		}
 
 		// ionscale has no support for Funnel yet, so remove Funnel attribute if set via ACL policy
 		{
-			slices.DeleteFunc(capabilities, func(c tailcfg.NodeCapability) bool { return c == tailcfg.NodeAttrFunnel })
 			delete(capMap, tailcfg.NodeAttrFunnel)
 		}
 
-		if capVer >= 74 {
-			n.CapMap = capMap
-		} else {
-			n.Capabilities = capabilities
-		}
+		n.CapMap = capMap
 	}
 
 	if !m.ExpiresAt.IsZero() {

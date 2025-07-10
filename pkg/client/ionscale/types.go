@@ -2,6 +2,7 @@ package ionscale
 
 import (
 	"encoding/json"
+
 	"tailscale.com/tailcfg"
 )
 
@@ -56,8 +57,9 @@ type ACLSSH struct {
 }
 
 type ACLNodeAttrGrant struct {
-	Target []string `json:"target,omitempty" hujson:"Target,omitempty"`
-	Attr   []string `json:"attr,omitempty" hujson:"Attr,omitempty"`
+	Target []string           `json:"target,omitempty" hujson:"Target,omitempty"`
+	Attr   []string           `json:"attr,omitempty" hujson:"Attr,omitempty"`
+	App    tailcfg.NodeCapMap `json:"app,omitempty" hujson:"App,omitempty"`
 }
 
 type ACLGrant struct {

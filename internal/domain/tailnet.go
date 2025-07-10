@@ -3,9 +3,10 @@ package domain
 import (
 	"context"
 	"errors"
-	"gorm.io/gorm"
 	"net/mail"
 	"strings"
+
+	"gorm.io/gorm"
 	"tailscale.com/util/dnsname"
 )
 
@@ -97,7 +98,7 @@ func (r *repository) GetTailnetByName(ctx context.Context, name string) (*Tailne
 
 func (r *repository) ListTailnets(ctx context.Context) ([]Tailnet, error) {
 	var tailnets = []Tailnet{}
-	tx := r.withContext(ctx).Find(&tailnets)
+	tx := r.withContext(ctx).Order("name ASC").Find(&tailnets)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

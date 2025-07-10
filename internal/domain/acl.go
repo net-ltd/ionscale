@@ -4,16 +4,19 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/go-multierror"
-	"github.com/jsiebens/ionscale/pkg/client/ionscale"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 	"net/netip"
 	"reflect"
 	"slices"
 	"sort"
 	"strconv"
 	"strings"
+
+	"maps"
+
+	"github.com/hashicorp/go-multierror"
+	"github.com/jsiebens/ionscale/pkg/client/ionscale"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"tailscale.com/tailcfg"
 )
 
@@ -140,8 +143,9 @@ func (a ACLPolicy) isTagOwner(tag string, p *User) bool {
 	return false
 }
 
-func (a ACLPolicy) NodeCapabilities(m *Machine) []tailcfg.NodeCapability {
-	var result = &StringSet{}
+func (a ACLPolicy) NodeCapabilities(m *Machine) tailcfg.NodeCapMap {
+
+	capabilities := make(tailcfg.NodeCapMap)
 
 	matches := func(targets []string) bool {
 		for _, alias := range targets {
@@ -175,17 +179,15 @@ func (a ACLPolicy) NodeCapabilities(m *Machine) []tailcfg.NodeCapability {
 
 	for _, nodeAddr := range a.NodeAttrs {
 		if matches(nodeAddr.Target) {
-			result.Add(nodeAddr.Attr...)
+			maps.Copy(capabilities, nodeAddr.App)
+			for _, attr := range nodeAddr.Attr {
+				capabilities[tailcfg.NodeCapability(attr)] = []tailcfg.RawMessage{}
+			}
+
 		}
 	}
 
-	items := result.Items()
-	caps := make([]tailcfg.NodeCapability, len(items))
-	for i, c := range items {
-		caps[i] = tailcfg.NodeCapability(c)
-	}
-
-	return caps
+	return capabilities
 }
 
 func (a ACLPolicy) parsePortRanges(s string) ([]tailcfg.PortRange, error) {

@@ -1,13 +1,14 @@
 package tests
 
 import (
+	"testing"
+
 	"github.com/jsiebens/ionscale/pkg/client/ionscale"
 	"github.com/jsiebens/ionscale/pkg/defaults"
 	"github.com/jsiebens/ionscale/tests/sc"
 	"github.com/jsiebens/ionscale/tests/tsn"
 	"github.com/stretchr/testify/require"
 	"tailscale.com/tailcfg"
-	"testing"
 )
 
 func TestNodeAttrs(t *testing.T) {
